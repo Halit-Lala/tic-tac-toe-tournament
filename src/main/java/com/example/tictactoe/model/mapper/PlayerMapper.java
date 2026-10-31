@@ -1,5 +1,7 @@
 package com.example.tictactoe.model.mapper;
 
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 import com.example.tictactoe.model.dto.response.PlayerDTO;
@@ -17,5 +19,11 @@ public class PlayerMapper {
                 player.getId(),
                 player.getName()
         );
+    }
+
+    public List<PlayerDTO> toDTOList(List<Player> players) {
+        return players.stream()
+                .map(this::toDTO)
+                .toList();
     }
 }
