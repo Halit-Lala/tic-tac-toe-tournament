@@ -12,33 +12,31 @@ import com.example.tictactoe.model.enums.PlayerSymbol;
 
 class GameEngineTest {
 
-    private GameEngine gameEngine;
     private GameState game;
 
     @BeforeEach
     void setUp() {
-        gameEngine = new GameEngine();
-        game = gameEngine.createGame(PlayerSymbol.X);
+        game = GameState.initial(PlayerSymbol.X);
     }
 
     @Test
     void shouldAlternateTurnsAfterEachMove() {
-        gameEngine.playMove(game, 0, 0);
+        GameEngine.playMove(game, 0, PlayerSymbol.X);
 
-        assertThat(game.getNextSymbol()).isEqualTo(PlayerSymbol.O);
+        assertThat(GameEngine.nextSymbol(game)).isEqualTo(PlayerSymbol.O);
 
-        gameEngine.playMove(game, 1, 0);
+        GameEngine.playMove(game, 3, PlayerSymbol.O);
 
-        assertThat(game.getNextSymbol()).isEqualTo(PlayerSymbol.X);
+        assertThat(GameEngine.nextSymbol(game)).isEqualTo(PlayerSymbol.X);
     }
 
     @Test
     void shouldDetectHorizontalWin() {
-        gameEngine.playMove(game, 0, 0); // X
-        gameEngine.playMove(game, 1, 0); // O
-        gameEngine.playMove(game, 0, 1); // X
-        gameEngine.playMove(game, 1, 1); // O
-        gameEngine.playMove(game, 0, 2); // X wins
+        GameEngine.playMove(game, 0, PlayerSymbol.X);
+        GameEngine.playMove(game, 3, PlayerSymbol.O);
+        GameEngine.playMove(game, 1, PlayerSymbol.X);
+        GameEngine.playMove(game, 4, PlayerSymbol.O);
+        GameEngine.playMove(game, 2, PlayerSymbol.X);
 
         assertThat(game.getStatus()).isEqualTo(GameStatus.COMPLETED);
         assertThat(game.getOutcome()).isEqualTo(GameOutcome.X_WINS);
@@ -46,49 +44,51 @@ class GameEngineTest {
 
     @Test
     void shouldDetectVerticalWin() {
-        gameEngine.playMove(game, 0, 0); // X
-        gameEngine.playMove(game, 0, 1); // O
-        gameEngine.playMove(game, 1, 0); // X
-        gameEngine.playMove(game, 1, 1); // O
-        gameEngine.playMove(game, 2, 0); // X wins
+        GameEngine.playMove(game, 0, PlayerSymbol.X);
+        GameEngine.playMove(game, 1, PlayerSymbol.O);
+        GameEngine.playMove(game, 3, PlayerSymbol.X);
+        GameEngine.playMove(game, 4, PlayerSymbol.O);
+        GameEngine.playMove(game, 6, PlayerSymbol.X);
 
+        assertThat(game.getStatus()).isEqualTo(GameStatus.COMPLETED);
         assertThat(game.getOutcome()).isEqualTo(GameOutcome.X_WINS);
     }
 
     @Test
     void shouldDetectMainDiagonalWin() {
-        gameEngine.playMove(game, 0, 0); // X
-        gameEngine.playMove(game, 0, 1); // O
-        gameEngine.playMove(game, 1, 1); // X
-        gameEngine.playMove(game, 0, 2); // O
-        gameEngine.playMove(game, 2, 2); // X wins
+        GameEngine.playMove(game, 0, PlayerSymbol.X);
+        GameEngine.playMove(game, 1, PlayerSymbol.O);
+        GameEngine.playMove(game, 4, PlayerSymbol.X);
+        GameEngine.playMove(game, 2, PlayerSymbol.O);
+        GameEngine.playMove(game, 8, PlayerSymbol.X);
 
+        assertThat(game.getStatus()).isEqualTo(GameStatus.COMPLETED);
         assertThat(game.getOutcome()).isEqualTo(GameOutcome.X_WINS);
     }
 
     @Test
     void shouldDetectAntiDiagonalWin() {
-        gameEngine.playMove(game, 0, 2); // X
-        gameEngine.playMove(game, 0, 0); // O
-        gameEngine.playMove(game, 1, 1); // X
-        gameEngine.playMove(game, 1, 0); // O
-        gameEngine.playMove(game, 2, 0); // X wins
+        GameEngine.playMove(game, 2, PlayerSymbol.X);
+        GameEngine.playMove(game, 0, PlayerSymbol.O);
+        GameEngine.playMove(game, 4, PlayerSymbol.X);
+        GameEngine.playMove(game, 3, PlayerSymbol.O);
+        GameEngine.playMove(game, 6, PlayerSymbol.X);
 
         assertThat(game.getStatus()).isEqualTo(GameStatus.COMPLETED);
         assertThat(game.getOutcome()).isEqualTo(GameOutcome.X_WINS);
-}
+    }
 
     @Test
     void shouldDetectDraw() {
-        gameEngine.playMove(game, 0, 0); // X
-        gameEngine.playMove(game, 0, 1); // O
-        gameEngine.playMove(game, 0, 2); // X
-        gameEngine.playMove(game, 1, 1); // O
-        gameEngine.playMove(game, 1, 0); // X
-        gameEngine.playMove(game, 1, 2); // O
-        gameEngine.playMove(game, 2, 1); // X
-        gameEngine.playMove(game, 2, 0); // O
-        gameEngine.playMove(game, 2, 2); // X
+        GameEngine.playMove(game, 0, PlayerSymbol.X);
+        GameEngine.playMove(game, 1, PlayerSymbol.O);
+        GameEngine.playMove(game, 2, PlayerSymbol.X);
+        GameEngine.playMove(game, 4, PlayerSymbol.O);
+        GameEngine.playMove(game, 3, PlayerSymbol.X);
+        GameEngine.playMove(game, 5, PlayerSymbol.O);
+        GameEngine.playMove(game, 7, PlayerSymbol.X);
+        GameEngine.playMove(game, 6, PlayerSymbol.O);
+        GameEngine.playMove(game, 8, PlayerSymbol.X);
 
         assertThat(game.getStatus()).isEqualTo(GameStatus.COMPLETED);
         assertThat(game.getOutcome()).isEqualTo(GameOutcome.DRAW);
@@ -96,34 +96,65 @@ class GameEngineTest {
 
     @Test
     void shouldRejectMoveOutsideBoard() {
-        assertThatThrownBy(() -> gameEngine.playMove(game, 3, 0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() ->
+                GameEngine.playMove(game, 9, PlayerSymbol.X)
+        ).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void shouldRejectNegativeCellIndex() {
+        assertThatThrownBy(() ->
+                GameEngine.playMove(game, -1, PlayerSymbol.X)
+        ).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldRejectMoveOnOccupiedCell() {
-        gameEngine.playMove(game, 0, 0);
+        GameEngine.playMove(game, 0, PlayerSymbol.X);
 
-        assertThatThrownBy(() -> gameEngine.playMove(game, 0, 0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() ->
+                GameEngine.playMove(game, 0, PlayerSymbol.O)
+        ).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void shouldRejectMoveWhenItIsNotPlayersTurn() {
+        assertThatThrownBy(() ->
+                GameEngine.playMove(game, 0, PlayerSymbol.O)
+        ).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldRejectMovesAfterGameIsCompleted() {
-        gameEngine.playMove(game, 0, 0); // X
-        gameEngine.playMove(game, 1, 0); // O
-        gameEngine.playMove(game, 0, 1); // X
-        gameEngine.playMove(game, 1, 1); // O
-        gameEngine.playMove(game, 0, 2); // X wins
+        GameEngine.playMove(game, 0, PlayerSymbol.X);
+        GameEngine.playMove(game, 3, PlayerSymbol.O);
+        GameEngine.playMove(game, 1, PlayerSymbol.X);
+        GameEngine.playMove(game, 4, PlayerSymbol.O);
+        GameEngine.playMove(game, 2, PlayerSymbol.X);
 
-        assertThatThrownBy(() -> gameEngine.playMove(game, 2, 2)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() ->
+                GameEngine.playMove(game, 8, PlayerSymbol.O)
+        ).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void shouldAllowPlayerOToStartTheGame() {
-        GameState newGame = gameEngine.createGame(PlayerSymbol.O);
+        GameState newGame = GameState.initial(PlayerSymbol.O);
 
-        gameEngine.playMove(newGame, 0, 0);
+        GameEngine.playMove(newGame, 0, PlayerSymbol.O);
 
-        assertThat(newGame.getCell(0, 0)).isEqualTo(PlayerSymbol.O);
-        assertThat(newGame.getNextSymbol()).isEqualTo(PlayerSymbol.X);
+        assertThat(newGame.getCell(0)).isEqualTo(PlayerSymbol.O);
+        assertThat(GameEngine.nextSymbol(newGame)).isEqualTo(PlayerSymbol.X);
+    }
+
+    @Test
+    void shouldReturnNullAsNextSymbolWhenGameIsCompleted() {
+        GameEngine.playMove(game, 0, PlayerSymbol.X);
+        GameEngine.playMove(game, 3, PlayerSymbol.O);
+        GameEngine.playMove(game, 1, PlayerSymbol.X);
+        GameEngine.playMove(game, 4, PlayerSymbol.O);
+        GameEngine.playMove(game, 2, PlayerSymbol.X);
+
+        assertThat(GameEngine.nextSymbol(game)).isNull();
     }
 }

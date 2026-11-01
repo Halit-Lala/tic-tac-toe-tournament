@@ -3,7 +3,9 @@ package com.example.tictactoe.model.entity;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import com.example.tictactoe.model.enums.GameOutcome;
 import com.example.tictactoe.model.enums.GameStatus;
 import com.example.tictactoe.model.enums.PlayerSymbol;
 import com.example.tictactoe.model.enums.TournamentFormat;
@@ -88,30 +90,6 @@ public class Tournament {
         this.status = TournamentStatus.CREATED;
     }
 
-    public Game startNextGame() {
-        if (status != TournamentStatus.IN_PROGRESS) {
-            throw new IllegalStateException("Cannot start a game when tournament is not in progress");
-        }
-
-        int nextGameNumber = games.size() + 1;
-
-        if (nextGameNumber > format.getTotalGames()) {
-            throw new IllegalStateException("Tournament has reached its maximum number of games");
-        }
-
-        if (!games.isEmpty() && games.get(games.size() - 1).getStatus() != GameStatus.COMPLETED) {
-            throw new IllegalStateException("The previous game must be completed before starting another");
-        }
-
-        PlayerSymbol startingSymbol = nextGameNumber % 2 == 1 ? PlayerSymbol.X : PlayerSymbol.O;
-
-        Game game = new Game(this, nextGameNumber, startingSymbol);
-
-        games.add(game);
-
-        return game;
-    }
-
     public void start() {
         if (status != TournamentStatus.CREATED) {
             throw new IllegalStateException("Only a created tournament can be started");
@@ -133,7 +111,41 @@ public class Tournament {
         this.status = TournamentStatus.COMPLETED;
     }
 
+    public Optional<Game> findCurrentGame() {
+        return games.stream()
+                .filter(g -> g.getStatus() == GameStatus.IN_PROGRESS)
+                .findFirst();
+    }
+
+    public Game getCurrentGame() {
+        return findCurrentGame()
+                .orElseThrow(() -> new IllegalStateException("No game is currently in progress"));
+    }
+
+    public int countWins(PlayerSymbol symbol) {
+        GameOutcome winning = symbol == PlayerSymbol.X ? GameOutcome.X_WINS : GameOutcome.O_WINS;
+        return (int) games.stream()
+                .filter(g -> g.getOutcome() == winning)
+                .count();
+    }
+
+    public int countDraws() {
+        return (int) games.stream()
+                .filter(g -> g.getOutcome() == GameOutcome.DRAW)
+                .count();
+    }
+
+    public int countCompletedGames() {
+        return (int) games.stream()
+                .filter(g -> g.getStatus() == GameStatus.COMPLETED)
+                .count();
+    }
+
     public List<Game> getGames() {
         return Collections.unmodifiableList(games);
+    }
+
+    public void addGame(Game game) {
+        games.add(game);
     }
 }

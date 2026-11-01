@@ -1,10 +1,9 @@
 package com.example.tictactoe.model.entity;
 
-import java.util.regex.Pattern;
-
 import com.example.tictactoe.model.enums.GameOutcome;
 import com.example.tictactoe.model.enums.GameStatus;
 import com.example.tictactoe.model.enums.PlayerSymbol;
+import com.example.tictactoe.util.Constants;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,9 +34,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Game {
-
-    public static final String EMPTY_BOARD = "---------";
-    private static final Pattern VALID_BOARD = Pattern.compile("[XO-]{9}");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -80,32 +76,13 @@ public class Game {
         this.tournament = tournament;
         this.gameNumber = gameNumber;
         this.startingSymbol = startingSymbol;
-        this.boardState = EMPTY_BOARD;
+        this.boardState = Constants.EMPTY_BOARD;
         this.status = GameStatus.IN_PROGRESS;
     }
-        
-    public void updateBoardState(String boardState) {
-        if (boardState == null || !VALID_BOARD.matcher(boardState).matches()) {
-            throw new IllegalArgumentException("Board state must contain exactly 9 characters");
-        }
 
-        if (status == GameStatus.COMPLETED) {
-            throw new IllegalStateException("Cannot update a completed game");
-        }
-
-        this.boardState = boardState;
-    }
-
-    public void complete(GameOutcome outcome) {
-        if (status == GameStatus.COMPLETED) {
-            throw new IllegalStateException("Game is already completed");
-        }
-        if (outcome == null) {
-            throw new IllegalArgumentException("Game outcome cannot be null");
-        }
-
+    public void applyState(String board, GameStatus status, GameOutcome outcome) {
+        this.boardState = board;
+        this.status = status;
         this.outcome = outcome;
-        this.status = GameStatus.COMPLETED;
     }
-
 }

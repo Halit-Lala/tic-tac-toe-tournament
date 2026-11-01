@@ -6,10 +6,12 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.example.tictactoe.model.domain.GameState;
 import com.example.tictactoe.model.dto.response.GameDTO;
 import com.example.tictactoe.model.entity.Game;
 import com.example.tictactoe.model.enums.GameStatus;
 import com.example.tictactoe.model.enums.PlayerSymbol;
+import com.example.tictactoe.util.Constants;
 
 @Component
 public class GameMapper {
@@ -28,6 +30,19 @@ public class GameMapper {
 
     public List<GameDTO> toDTOList(List<Game> games) {
         return games.stream().map(this::toDTO).toList();
+    }
+
+    public GameState toState(Game game) {
+        String s = game.getBoardState();
+        PlayerSymbol[] board = new PlayerSymbol[Constants.BOARD_CELLS_LENGTH];
+        for (int i = 0; i < s.length(); i++) {
+            board[i] = switch (s.charAt(i)) {
+                case 'X' -> PlayerSymbol.X;
+                case 'O' -> PlayerSymbol.O;
+                default -> null;
+            };
+        }
+        return new GameState(game.getStartingSymbol(), board, game.getStatus(), game.getOutcome());
     }
 
     private List<List<PlayerSymbol>> toBoard(String boardState) {
@@ -54,6 +69,14 @@ public class GameMapper {
         return Collections.unmodifiableList(board);
     }
 
+    public String toBoardString(GameState state) {
+        StringBuilder sb = new StringBuilder();
+        for (PlayerSymbol cell : state.getBoard()) {
+            sb.append(cell == null ? '-' : cell.name().charAt(0));
+        }
+        return sb.toString();
+    }
+
     private PlayerSymbol getNextSymbol(Game game) {
         if (game.getStatus() == GameStatus.COMPLETED) {
             return null;
@@ -64,10 +87,6 @@ public class GameMapper {
                                 .filter(cell -> cell != '-')
                                 .count();
 
-        if (occupiedCells % 2 == 0) {
-            return game.getStartingSymbol();
-        }
-
-        return game.getStartingSymbol() == PlayerSymbol.X ? PlayerSymbol.O : PlayerSymbol.X;
+        return occupiedCells % 2 == 0 ? game.getStartingSymbol() : game.getStartingSymbol().opposite();
     }
 }

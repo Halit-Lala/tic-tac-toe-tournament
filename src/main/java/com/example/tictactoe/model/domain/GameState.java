@@ -7,37 +7,51 @@ import com.example.tictactoe.util.Constants;
 
 public class GameState {
 
-    private final PlayerSymbol[][] board;
-    private PlayerSymbol nextSymbol;
+    private final PlayerSymbol startingSymbol;
+    private final PlayerSymbol[] board;
     private GameStatus status;
     private GameOutcome outcome;
 
-    public GameState(PlayerSymbol startingSymbol) {
+    public GameState(
+        PlayerSymbol startingSymbol,
+        PlayerSymbol[] board,
+        GameStatus status,
+        GameOutcome outcome
+    ) {
         if (startingSymbol == null) {
             throw new IllegalArgumentException("Starting symbol cannot be null");
         }
-
-        this.board = new PlayerSymbol[Constants.BOARD_SIZE][Constants.BOARD_SIZE];
-        this.nextSymbol = startingSymbol;
-        this.status = GameStatus.IN_PROGRESS;
-    }
-
-    public PlayerSymbol[][] getBoard() {
-        PlayerSymbol[][] copy = new PlayerSymbol[Constants.BOARD_SIZE][Constants.BOARD_SIZE];
-
-        for (int row = 0; row < Constants.BOARD_SIZE; row++) {
-            copy[row] = board[row].clone();
+        if (board == null || board.length != Constants.BOARD_CELLS_LENGTH) {
+            throw new IllegalArgumentException("Board must have exactly 9 cells");
         }
-
-        return copy;
+        if (status == null) {
+            throw new IllegalArgumentException("Status cannot be null");
+        }
+        this.startingSymbol = startingSymbol;
+        this.board = board.clone();
+        this.status = status;
+        this.outcome = outcome;
     }
 
-    public PlayerSymbol getCell(int row, int col) {
-        return board[row][col];
+    public static GameState initial(PlayerSymbol startingSymbol) {
+        return new GameState(
+            startingSymbol,
+            new PlayerSymbol[Constants.BOARD_CELLS_LENGTH],
+            GameStatus.IN_PROGRESS,
+            null
+        );
     }
 
-    public PlayerSymbol getNextSymbol() {
-        return nextSymbol;
+    public PlayerSymbol getStartingSymbol() {
+        return startingSymbol;
+    }
+
+    public PlayerSymbol getCell(int index) {
+        return board[index];
+    }
+
+    public PlayerSymbol[] getBoard() {
+        return board.clone();
     }
 
     public GameStatus getStatus() {
@@ -48,16 +62,12 @@ public class GameState {
         return outcome;
     }
 
-    public void placeSymbol(int row, int col, PlayerSymbol symbol) {
-        board[row][col] = symbol;
+    public void setCell(int index, PlayerSymbol symbol) {
+        board[index] = symbol;
     }
 
-    public void switchTurn() {
-        nextSymbol = nextSymbol == PlayerSymbol.X ? PlayerSymbol.O : PlayerSymbol.X;
-    }
-
-    public void complete(GameOutcome outcome) {
+    public void setResult(GameStatus status, GameOutcome outcome) {
+        this.status = status;
         this.outcome = outcome;
-        this.status = GameStatus.COMPLETED;
     }
 }

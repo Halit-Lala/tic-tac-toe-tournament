@@ -1,6 +1,7 @@
 package com.example.tictactoe.service;
 
-import org.springframework.stereotype.Service;
+import java.util.Arrays;
+import java.util.Objects;
 
 import com.example.tictactoe.model.domain.GameState;
 import com.example.tictactoe.model.enums.GameOutcome;
@@ -8,94 +9,63 @@ import com.example.tictactoe.model.enums.GameStatus;
 import com.example.tictactoe.model.enums.PlayerSymbol;
 import com.example.tictactoe.util.Constants;
 
-@Service
-public class GameEngine {
+public final class GameEngine {
 
-    public GameState createGame(PlayerSymbol startingSymbol) {
-        return new GameState(startingSymbol);
+    private GameEngine() {}
+
+    public static void playMove(GameState state, int cell, PlayerSymbol symbol) {
+        validateMove(state, cell, symbol);
+
+        state.setCell(cell, symbol);
+
+        if (hasWon(state, symbol)) {
+            GameOutcome outcome = symbol == PlayerSymbol.X ? GameOutcome.X_WINS : GameOutcome.O_WINS;
+            state.setResult(GameStatus.COMPLETED, outcome);
+        } else if (isFull(state)) {
+            state.setResult(GameStatus.COMPLETED, GameOutcome.DRAW);
+        }
     }
 
-    public void playMove(GameState game, int row, int col) {
-        validateMove(game, row, col);
-
-        PlayerSymbol currentSymbol = game.getNextSymbol();
-
-        game.placeSymbol(row, col, currentSymbol);
-
-        if (hasWon(game, currentSymbol)) {
-            GameOutcome outcome = currentSymbol == PlayerSymbol.X ? GameOutcome.X_WINS : GameOutcome.O_WINS;
-
-            game.complete(outcome);
-            return;
+    public static PlayerSymbol nextSymbol(GameState state) {
+        if (state.getStatus() == GameStatus.COMPLETED) {
+            return null;
         }
-
-        if (isBoardFull(game)) {
-            game.complete(GameOutcome.DRAW);
-            return;
-        }
-
-        game.switchTurn();
+        long occupiedCells = countOccupied(state);
+        return occupiedCells % 2 == 0
+                ? state.getStartingSymbol()
+                : state.getStartingSymbol().opposite();
     }
 
-    private void validateMove(GameState game, int row, int col) {
-        if (game == null) {
-            throw new IllegalArgumentException("Game cannot be null");
-        }
+    private static void validateMove(GameState state, int cell, PlayerSymbol symbol) {
+        Objects.requireNonNull(state, "Game state cannot be null");
+        Objects.requireNonNull(symbol, "Symbol cannot be null");
 
-        if (game.getStatus() == GameStatus.COMPLETED) {
+        if (state.getStatus() == GameStatus.COMPLETED)
             throw new IllegalStateException("Game is already completed");
-        }
-
-        if (row < 0 || row >= Constants.BOARD_SIZE || col < 0 || col >= Constants.BOARD_SIZE) {
+        if (cell < 0 || cell >= Constants.BOARD_CELLS_LENGTH)
             throw new IllegalArgumentException("Move is outside the board");
-        }
-
-        if (game.getCell(row, col) != null) {
+        if (state.getCell(cell) != null)
             throw new IllegalArgumentException("Cell is already occupied");
-        }
+        if (symbol != nextSymbol(state))
+            throw new IllegalArgumentException("It is not " + symbol + "'s turn");
     }
 
-    private boolean hasWon(GameState game, PlayerSymbol symbol) {
-        for (int row = 0; row < Constants.BOARD_SIZE; row++) {
-            if (
-                game.getCell(row, 0) == symbol
-                && game.getCell(row, 1) == symbol
-                && game.getCell(row, 2) == symbol
-            ) {
+    private static boolean hasWon(GameState state, PlayerSymbol symbol) {
+        for (int[] line : Constants.WIN_LINES) {
+            if (state.getCell(line[0]) == symbol
+                    && state.getCell(line[1]) == symbol
+                    && state.getCell(line[2]) == symbol) {
                 return true;
             }
         }
-
-        for (int col = 0; col < Constants.BOARD_SIZE; col++) {
-            if (
-                game.getCell(0, col) == symbol 
-                && game.getCell(1, col) == symbol
-                && game.getCell(2, col) == symbol
-            ) {
-                return true;
-            }
-        }
-
-        boolean mainDiagonal = game.getCell(0, 0) == symbol
-                                && game.getCell(1, 1) == symbol
-                                && game.getCell(2, 2) == symbol;
-
-        boolean antiDiagonal = game.getCell(0, 2) == symbol
-                                && game.getCell(1, 1) == symbol
-                                && game.getCell(2, 0) == symbol;
-
-        return mainDiagonal || antiDiagonal;
+        return false;
     }
 
-    private boolean isBoardFull(GameState game) {
-        for (int row = 0; row < Constants.BOARD_SIZE; row++) {
-            for (int col = 0; col < Constants.BOARD_SIZE; col++) {
-                if (game.getCell(row, col) == null) {
-                    return false;
-                }
-            }
-        }
+    private static boolean isFull(GameState state) {
+        return countOccupied(state) == Constants.BOARD_CELLS_LENGTH;
+    }
 
-        return true;
+    private static long countOccupied(GameState state) {
+        return Arrays.stream(state.getBoard()).filter(Objects::nonNull).count();
     }
 }

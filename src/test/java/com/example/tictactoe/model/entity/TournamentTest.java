@@ -1,4 +1,3 @@
-
 package com.example.tictactoe.model.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +25,20 @@ class TournamentTest {
         tournament = new Tournament(playerX, playerO, TournamentFormat.BEST_OF_3);
     }
 
+    private Game addGame(int number, PlayerSymbol starter) {
+        Game game = new Game(tournament, number, starter);
+        tournament.addGame(game);
+        return game;
+    }
+
+    private Game addCompletedGame(int number, PlayerSymbol starter, String board, GameOutcome outcome) {
+        Game game = addGame(number, starter);
+        game.applyState(board, GameStatus.COMPLETED, outcome);
+        return game;
+    }
+
+    // ---- creation and lifecycle ----
+
     @Test
     void shouldCreateTournamentWithInitialState() {
         assertThat(tournament.getStatus()).isEqualTo(TournamentStatus.CREATED);
@@ -34,6 +47,12 @@ class TournamentTest {
         assertThat(tournament.getFormat()).isEqualTo(TournamentFormat.BEST_OF_3);
         assertThat(tournament.getGames()).isEmpty();
         assertThat(tournament.getWinner()).isNull();
+    }
+
+    @Test
+    void shouldRejectSamePlayers() {
+        assertThatThrownBy(() -> new Tournament(playerX, playerX, TournamentFormat.BEST_OF_1))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -59,82 +78,8 @@ class TournamentTest {
     }
 
     @Test
-    void shouldNotStartGameBeforeTournamentStarts() {
-        assertThatThrownBy(() -> tournament.startNextGame()).isInstanceOf(IllegalStateException.class);
-    }
-
-    @Test
-    void shouldStartFirstGameWithX() {
-        tournament.start();
-
-        Game game = tournament.startNextGame();
-
-        assertThat(game.getGameNumber()).isEqualTo(1);
-        assertThat(game.getStartingSymbol()).isEqualTo(PlayerSymbol.X);
-        assertThat(game.getStatus()).isEqualTo(GameStatus.IN_PROGRESS);
-        assertThat(game.getBoardState()).isEqualTo(Game.EMPTY_BOARD);
-        assertThat(tournament.getGames()).containsExactly(game);
-    }
-
-    @Test
-    void shouldStartSecondGameWithO() {
-        tournament.start();
-
-        Game firstGame = tournament.startNextGame();
-        firstGame.complete(GameOutcome.X_WINS);
-
-        Game secondGame = tournament.startNextGame();
-
-        assertThat(secondGame.getGameNumber()).isEqualTo(2);
-        assertThat(secondGame.getStartingSymbol()).isEqualTo(PlayerSymbol.O);
-
-        assertThat(tournament.getGames()).containsExactly(firstGame, secondGame);
-    }
-
-    @Test
-    void shouldAlternateStartingSymbolForEachGame() {
-        tournament.start();
-
-        Game firstGame = tournament.startNextGame();
-        firstGame.complete(GameOutcome.X_WINS);
-
-        Game secondGame = tournament.startNextGame();
-        secondGame.complete(GameOutcome.O_WINS);
-
-        Game thirdGame = tournament.startNextGame();
-
-        assertThat(firstGame.getStartingSymbol()).isEqualTo(PlayerSymbol.X);
-        assertThat(secondGame.getStartingSymbol()).isEqualTo(PlayerSymbol.O);
-        assertThat(thirdGame.getStartingSymbol()).isEqualTo(PlayerSymbol.X);
-    }
-
-    @Test
-    void shouldNotStartNextGameBeforePreviousGameCompletes() {
-        tournament.start();
-
-        tournament.startNextGame();
-
-        assertThatThrownBy(() -> tournament.startNextGame()).isInstanceOf(IllegalStateException.class);
-    }
-
-    @Test
-    void shouldNotExceedMaximumNumberOfGames() {
-        Tournament bestOfOne = new Tournament(playerX, playerO, TournamentFormat.BEST_OF_1);
-
-        bestOfOne.start();
-
-        Game firstGame = bestOfOne.startNextGame();
-        firstGame.complete(GameOutcome.DRAW);
-
-        assertThatThrownBy(() -> bestOfOne.startNextGame()).isInstanceOf(IllegalStateException.class);
-    }
-
-    @Test
     void shouldCompleteTournamentWithWinner() {
         tournament.start();
-
-        Game game = tournament.startNextGame();
-        game.complete(GameOutcome.X_WINS);
 
         tournament.complete(playerX);
 
@@ -145,9 +90,6 @@ class TournamentTest {
     @Test
     void shouldCompleteTournamentAsDraw() {
         tournament.start();
-
-        Game game = tournament.startNextGame();
-        game.complete(GameOutcome.DRAW);
 
         tournament.complete(null);
 
@@ -164,32 +106,75 @@ class TournamentTest {
     void shouldNotCompleteTournamentWithNonParticipantWinner() {
         tournament.start();
 
-        Game game = tournament.startNextGame();
-        game.complete(GameOutcome.X_WINS);
-
         Player anotherPlayer = new Player("Charlie", "charlie");
 
-        assertThatThrownBy(() -> tournament.complete(anotherPlayer)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> tournament.complete(anotherPlayer))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void shouldNotCompleteTournamentTwice() {
         tournament.start();
-
-        Game game = tournament.startNextGame();
-        game.complete(GameOutcome.X_WINS);
-
         tournament.complete(playerX);
 
         assertThatThrownBy(() -> tournament.complete(playerO)).isInstanceOf(IllegalStateException.class);
     }
 
+    // ---- games collection ----
+
+    @Test
+    void shouldAddGame() {
+        Game game = addGame(1, PlayerSymbol.X);
+
+        assertThat(tournament.getGames()).containsExactly(game);
+    }
+
     @Test
     void shouldNotAllowExternalModificationOfGamesCollection() {
-        tournament.start();
+        assertThatThrownBy(() -> tournament.getGames().add(new Game(tournament, 1, PlayerSymbol.X)))
+                .isInstanceOf(UnsupportedOperationException.class);
+    }
 
-        assertThatThrownBy(() -> tournament.getGames().add(
-                new Game(tournament, 1, PlayerSymbol.X)
-        )).isInstanceOf(UnsupportedOperationException.class);
+    // ---- current game ----
+
+    @Test
+    void shouldFindCurrentGameWhenOneIsInProgress() {
+        Game game = addGame(1, PlayerSymbol.X);
+
+        assertThat(tournament.findCurrentGame()).contains(game);
+        assertThat(tournament.getCurrentGame()).isEqualTo(game);
+    }
+
+    @Test
+    void shouldReturnEmptyCurrentGameWhenNoneInProgress() {
+        addCompletedGame(1, PlayerSymbol.X, "XXXOO----", GameOutcome.X_WINS);
+
+        assertThat(tournament.findCurrentGame()).isEmpty();
+    }
+
+    @Test
+    void shouldThrowWhenGettingCurrentGameAndNoneInProgress() {
+        assertThatThrownBy(() -> tournament.getCurrentGame()).isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
+    void shouldCountWinsDrawsAndCompletedGames() {
+        addCompletedGame(1, PlayerSymbol.X, "XXXOO----", GameOutcome.X_WINS);
+        addCompletedGame(2, PlayerSymbol.O, "OOOXX-X--", GameOutcome.O_WINS);
+        addCompletedGame(3, PlayerSymbol.X, "XOXXOOOXX", GameOutcome.DRAW);
+        addGame(4, PlayerSymbol.O);                      // still in progress
+
+        assertThat(tournament.countWins(PlayerSymbol.X)).isEqualTo(1);
+        assertThat(tournament.countWins(PlayerSymbol.O)).isEqualTo(1);
+        assertThat(tournament.countDraws()).isEqualTo(1);
+        assertThat(tournament.countCompletedGames()).isEqualTo(3);
+    }
+
+    @Test
+     void shouldCountZeroWhenNoGames() {
+        assertThat(tournament.countWins(PlayerSymbol.X)).isZero();
+        assertThat(tournament.countWins(PlayerSymbol.O)).isZero();
+        assertThat(tournament.countDraws()).isZero();
+        assertThat(tournament.countCompletedGames()).isZero();
     }
 }
