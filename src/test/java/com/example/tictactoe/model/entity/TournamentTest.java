@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.example.tictactoe.exception.IllegalMoveException;
 import com.example.tictactoe.model.enums.GameOutcome;
 import com.example.tictactoe.model.enums.GameStatus;
 import com.example.tictactoe.model.enums.PlayerSymbol;
@@ -154,7 +155,7 @@ class TournamentTest {
 
     @Test
     void shouldThrowWhenGettingCurrentGameAndNoneInProgress() {
-        assertThatThrownBy(() -> tournament.getCurrentGame()).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> tournament.getCurrentGame()).isInstanceOf(IllegalMoveException.class);
     }
 
     @Test

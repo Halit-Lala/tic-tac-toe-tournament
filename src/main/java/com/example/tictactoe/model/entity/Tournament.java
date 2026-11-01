@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.tictactoe.exception.IllegalMoveException;
 import com.example.tictactoe.model.enums.GameOutcome;
 import com.example.tictactoe.model.enums.GameStatus;
 import com.example.tictactoe.model.enums.PlayerSymbol;
@@ -119,7 +120,7 @@ public class Tournament {
 
     public Game getCurrentGame() {
         return findCurrentGame()
-                .orElseThrow(() -> new IllegalStateException("No game is currently in progress"));
+                .orElseThrow(() -> new IllegalMoveException("No game is currently in progress"));
     }
 
     public int countWins(PlayerSymbol symbol) {

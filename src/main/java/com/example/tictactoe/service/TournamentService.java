@@ -1,10 +1,9 @@
 package com.example.tictactoe.service;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
+import com.example.tictactoe.exception.IllegalMoveException;
 import com.example.tictactoe.exception.ResourceNotFoundException;
 import com.example.tictactoe.model.domain.GameState;
 import com.example.tictactoe.model.dto.request.NewTournamentDTO;
@@ -19,7 +18,6 @@ import com.example.tictactoe.model.enums.TournamentStatus;
 import com.example.tictactoe.model.mapper.GameMapper;
 import com.example.tictactoe.model.mapper.TournamentMapper;
 import com.example.tictactoe.repository.TournamentRepository;
-import com.example.tictactoe.service.GameEngine;
 import com.example.tictactoe.util.Constants;
 
 @Service
@@ -67,13 +65,13 @@ public class TournamentService {
         Tournament tournament = findTournamentOrThrow(tournamentId);
 
         if (tournament.getStatus() != TournamentStatus.IN_PROGRESS) {
-            throw new IllegalStateException("Tournament is not in progress");
+            throw new IllegalMoveException("Tournament is not in progress");
         }
 
         Game game = tournament.getCurrentGame();
 
         if (game.getGameNumber() != gameNumber) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Game " + gameNumber + " is not the current game");
+            throw new ResourceNotFoundException("Game " + gameNumber + " is not the current game");
         }
 
         GameState gameState = gameMapper.toState(game);
@@ -106,16 +104,16 @@ public class TournamentService {
 
     private Game createNextGame(Tournament tournament) {
         if (tournament.getStatus() != TournamentStatus.IN_PROGRESS) {
-            throw new IllegalStateException("Tournament is not in progress");
+            throw new IllegalMoveException("Tournament is not in progress");
         }
         if (tournament.findCurrentGame().isPresent()) {
-            throw new IllegalStateException("The current game is still in progress");
+            throw new IllegalMoveException("The current game is still in progress");
         }
 
         int nextGameNumber = tournament.getGames().size() + 1;
 
         if (nextGameNumber > tournament.getFormat().getTotalGames()) {
-            throw new IllegalStateException("Tournament has reached its maximum number of games");
+            throw new IllegalMoveException("Tournament has reached its maximum number of games");
         }
 
         PlayerSymbol startingSymbol = nextGameNumber % 2 == 1 ? PlayerSymbol.X : PlayerSymbol.O;

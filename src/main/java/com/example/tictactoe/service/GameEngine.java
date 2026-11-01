@@ -3,6 +3,7 @@ package com.example.tictactoe.service;
 import java.util.Arrays;
 import java.util.Objects;
 
+import com.example.tictactoe.exception.IllegalMoveException;
 import com.example.tictactoe.model.domain.GameState;
 import com.example.tictactoe.model.enums.GameOutcome;
 import com.example.tictactoe.model.enums.GameStatus;
@@ -41,13 +42,13 @@ public final class GameEngine {
         Objects.requireNonNull(symbol, "Symbol cannot be null");
 
         if (state.getStatus() == GameStatus.COMPLETED)
-            throw new IllegalStateException("Game is already completed");
+            throw new IllegalMoveException("Game is already completed");
         if (cell < 0 || cell >= Constants.BOARD_CELLS_LENGTH)
-            throw new IllegalArgumentException("Move is outside the board");
+            throw new IllegalMoveException("Move is outside the board");
         if (state.getCell(cell) != null)
-            throw new IllegalArgumentException("Cell is already occupied");
+            throw new IllegalMoveException("Cell is already occupied");
         if (symbol != nextSymbol(state))
-            throw new IllegalArgumentException("It is not " + symbol + "'s turn");
+            throw new IllegalMoveException("It is not " + symbol + "'s turn");
     }
 
     private static boolean hasWon(GameState state, PlayerSymbol symbol) {

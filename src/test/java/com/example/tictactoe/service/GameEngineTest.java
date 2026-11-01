@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import com.example.tictactoe.exception.IllegalMoveException;
 import com.example.tictactoe.model.domain.GameState;
 import com.example.tictactoe.model.enums.GameOutcome;
 import com.example.tictactoe.model.enums.GameStatus;
@@ -98,14 +99,14 @@ class GameEngineTest {
     void shouldRejectMoveOutsideBoard() {
         assertThatThrownBy(() ->
                 GameEngine.playMove(game, 9, PlayerSymbol.X)
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(IllegalMoveException.class);
     }
 
     @Test
     void shouldRejectNegativeCellIndex() {
         assertThatThrownBy(() ->
                 GameEngine.playMove(game, -1, PlayerSymbol.X)
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(IllegalMoveException.class);
     }
 
     @Test
@@ -114,14 +115,14 @@ class GameEngineTest {
 
         assertThatThrownBy(() ->
                 GameEngine.playMove(game, 0, PlayerSymbol.O)
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(IllegalMoveException.class);
     }
 
     @Test
     void shouldRejectMoveWhenItIsNotPlayersTurn() {
         assertThatThrownBy(() ->
                 GameEngine.playMove(game, 0, PlayerSymbol.O)
-        ).isInstanceOf(IllegalArgumentException.class);
+        ).isInstanceOf(IllegalMoveException.class);
     }
 
     @Test
@@ -134,7 +135,7 @@ class GameEngineTest {
 
         assertThatThrownBy(() ->
                 GameEngine.playMove(game, 8, PlayerSymbol.O)
-        ).isInstanceOf(IllegalStateException.class);
+        ).isInstanceOf(IllegalMoveException.class);
     }
 
     @Test
@@ -145,6 +146,24 @@ class GameEngineTest {
 
         assertThat(newGame.getCell(0)).isEqualTo(PlayerSymbol.O);
         assertThat(GameEngine.nextSymbol(newGame)).isEqualTo(PlayerSymbol.X);
+    }
+
+    @Test
+    void shouldNotChangeStateWhenMoveIsRejected() {
+        GameEngine.playMove(game, 0, PlayerSymbol.X);
+
+        assertThatThrownBy(() -> GameEngine.playMove(game, 0, PlayerSymbol.O))
+                .isInstanceOf(IllegalMoveException.class);
+
+        assertThat(game.getCell(0)).isEqualTo(PlayerSymbol.X);
+        assertThat(GameEngine.nextSymbol(game)).isEqualTo(PlayerSymbol.O);
+        assertThat(game.getStatus()).isEqualTo(GameStatus.IN_PROGRESS);
+    }
+
+    @Test
+    void shouldThrowNullPointerWhenSymbolIsNull() {
+        assertThatThrownBy(() -> GameEngine.playMove(game, 0, null))
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
