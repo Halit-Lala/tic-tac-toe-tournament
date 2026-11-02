@@ -1,5 +1,9 @@
 <app-topbar />
 
+@if (loading()) {
+  <mat-progress-bar class="loader" mode="indeterminate" aria-label="Loading" />
+}
+
 <main class="content">
   <router-outlet />
 </main>

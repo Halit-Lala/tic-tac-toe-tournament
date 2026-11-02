@@ -13,6 +13,7 @@ import { PlayerApiService } from '../../../player/services/player-api.service';
 import { Tournament, TournamentFormat } from '../../../tournament/models/tournament.model';
 import { NewTournamentRequest } from '../../models/setup.model';
 import { Player } from '../../../player/model/player.model';
+import { NotificationService } from '../../../../core/service/notification.service';
 
 @Component({
   selector: 'app-setup-tournament',
@@ -26,6 +27,7 @@ export class SetupTournament {
   private readonly tournamentApi = inject(TournamentApiService);
   private readonly playerApi = inject(PlayerApiService);
   private readonly router = inject(Router);
+  private readonly notifications = inject(NotificationService);
 
   protected readonly maxNameLength = 50;
   protected readonly formats: Array<{ value: TournamentFormat; label: string }> = [
@@ -42,7 +44,7 @@ export class SetupTournament {
       playerOName: ['', [Validators.required, notBlankValidator, Validators.maxLength(this.maxNameLength)]],
       format: ['BEST_OF_3' as TournamentFormat, Validators.required],
     },
-    { validators: distinctNamesValidator },
+    { validators: distinctNamesValidator }
   );
 
   protected readonly searchPlayers = (term: string): Observable<Player[]> => this.playerApi.search(term);
@@ -52,14 +54,17 @@ export class SetupTournament {
   constructor() {
     this.submit$.pipe(
         exhaustMap((request) =>
-          this.tournamentApi.create(request).pipe(
+          this.tournamentApi.createTournament(request).pipe(
             finalize(() => this.submitting.set(false)),
             catchError(() => EMPTY),
           ),
         ),
         takeUntilDestroyed(),
       )
-      .subscribe((tournament: Tournament) => this.router.navigate(['/tournaments', tournament.id]));
+      .subscribe((tournament: Tournament) => {
+        this.notifications.success('Tournament created');
+        this.router.navigate(['/tournaments', tournament.id])
+      });
   }
 
   protected onSubmit(): void {

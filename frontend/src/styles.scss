@@ -38,6 +38,23 @@ body {
 }
 /* You can add global styles to this file, and also import other style files */
 
+.snackbar {
+  --mat-snack-bar-supporting-text-color: #ffffff;
+  --mat-snack-bar-button-color: #ffffff;
+  --mat-snack-bar-supporting-text-size: 0.9rem;
+}
+
+.snackbar-info {
+  --mat-snack-bar-container-color: #1e3a8a;
+}
+
+.snackbar-success {
+  --mat-snack-bar-container-color: #1b6e3c;
+}
+
+.snackbar-error {
+  --mat-snack-bar-container-color: #b3261e;
+}
 
 .mb-15 {
     margin-bottom: 15px;

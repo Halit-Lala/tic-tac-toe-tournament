@@ -3,6 +3,14 @@
   min-height: 100vh;
 }
 
+.loader {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 200;
+}
+
 .content {
   max-width: 960px;
   margin: 20px auto 0 auto;
