@@ -1,0 +1,49 @@
+<!-- setup-tournament.html -->
+<header class="page-header">
+  <h1>Tournament Setup</h1>
+  <p>Configure your players and tournament format</p>
+</header>
+
+<section class="panel">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="field">
+      <span class="label mb-15" id="players-label">Choose players</span>
+
+      <div class="names" role="group" aria-labelledby="players-label">
+        <app-autocomplete-input
+          [label]="'Player X'"
+          [control]="form.controls.playerXName"
+          [search]="searchPlayers"
+          [markInvalid]="form.hasError('sameNames')"
+        />
+        <app-autocomplete-input
+          [label]="'Player O'"
+          [control]="form.controls.playerOName"
+          [search]="searchPlayers"
+          [markInvalid]="form.hasError('sameNames')"
+        />
+      </div>
+
+      @if (form.hasError('sameNames')) {
+        <p class="error mb-15" role="alert">Players must have different names</p>
+      }
+
+      <p class="hint">Player X starts the first game. The starting player alternates every game.</p>
+    </div>
+
+    <div class="field">
+      <span class="label mb-15" id="format-label">Tournament length</span>
+      <mat-button-toggle-group formControlName="format" aria-labelledby="format-label">
+        @for (option of formats; track option.value) {
+          <mat-button-toggle [value]="option.value">{{ option.label }}</mat-button-toggle>
+        }
+      </mat-button-toggle-group>
+    </div>
+
+    <div class="actions">
+      <button mat-flat-button type="submit" [disabled]="form.invalid || submitting()">
+        {{ submitting() ? 'Starting...' : 'Start tournament' }}
+      </button>
+    </div>
+  </form>
+</section>
