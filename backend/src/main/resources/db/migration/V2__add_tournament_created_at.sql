@@ -1,0 +1,9 @@
+ALTER TABLE tournament
+ADD COLUMN created_at TIMESTAMP WITH TIME ZONE;
+
+UPDATE tournament
+SET created_at = CURRENT_TIMESTAMP
+WHERE created_at IS NULL;
+
+ALTER TABLE tournament
+ALTER COLUMN created_at SET NOT NULL;

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.tictactoe.model.dto.response.ScoreDTO;
 import com.example.tictactoe.model.dto.response.TournamentDTO;
+import com.example.tictactoe.model.dto.response.TournamentHistoryEntryDTO;
 import com.example.tictactoe.model.entity.Game;
 import com.example.tictactoe.model.entity.Tournament;
 
@@ -30,7 +31,21 @@ public class TournamentMapper {
             tournament.getStatus(),
             playerMapper.toDTO(tournament.getWinner()),
             calculateScore(tournament),
-            gameMapper.toDTOList(tournament.getGames())
+            gameMapper.toDTOList(tournament.getGames()),
+            tournament.getCreatedAt()
+        );
+    }
+
+    public TournamentHistoryEntryDTO toHistoryDTO(Tournament tournament) {
+        return new TournamentHistoryEntryDTO(
+            tournament.getId(),
+            playerMapper.toDTO(tournament.getPlayerX()),
+            playerMapper.toDTO(tournament.getPlayerO()),
+            tournament.getFormat(),
+            tournament.getStatus(),
+            playerMapper.toDTO(tournament.getWinner()),
+            calculateScore(tournament),
+            tournament.getCreatedAt()
         );
     }
 

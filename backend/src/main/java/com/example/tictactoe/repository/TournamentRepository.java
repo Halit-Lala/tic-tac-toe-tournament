@@ -6,9 +6,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.example.tictactoe.model.entity.Tournament;
+import com.example.tictactoe.model.enums.TournamentStatus;
 import com.example.tictactoe.repository.projection.LeaderboardRow;
 
 public interface TournamentRepository extends JpaRepository<Tournament, Long> {
+
+    Page<Tournament> findByStatusOrderByCreatedAtDescIdDesc(
+        TournamentStatus status,
+        Pageable pageable
+    );
 
     @Query(
         value = """

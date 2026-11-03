@@ -1,9 +1,10 @@
 package com.example.tictactoe.model.dto.response;
 
+import java.time.Instant;
+import java.util.List;
+
 import com.example.tictactoe.model.enums.TournamentFormat;
 import com.example.tictactoe.model.enums.TournamentStatus;
-
-import java.util.List;
 
 public record TournamentDTO(
     Long id,
@@ -13,5 +14,6 @@ public record TournamentDTO(
     TournamentStatus status,
     PlayerDTO winner,
     ScoreDTO score,
-    List<GameDTO> games
+    List<GameDTO> games,
+    Instant createdAt
 ) {}

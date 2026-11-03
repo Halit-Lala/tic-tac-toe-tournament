@@ -1,5 +1,7 @@
 package com.example.tictactoe.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,7 +10,9 @@ import com.example.tictactoe.exception.ResourceNotFoundException;
 import com.example.tictactoe.model.domain.GameState;
 import com.example.tictactoe.model.dto.request.NewTournamentDTO;
 import com.example.tictactoe.model.dto.request.PlayMoveDTO;
+import com.example.tictactoe.model.dto.response.PageDTO;
 import com.example.tictactoe.model.dto.response.TournamentDTO;
+import com.example.tictactoe.model.dto.response.TournamentHistoryEntryDTO;
 import com.example.tictactoe.model.entity.Game;
 import com.example.tictactoe.model.entity.Player;
 import com.example.tictactoe.model.entity.Tournament;
@@ -160,4 +164,28 @@ public class TournamentService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public PageDTO<TournamentHistoryEntryDTO> getTournamentHistory(
+        int pageNumber,
+        int pageSize
+    ) {
+        int safePageNumber = Math.max(pageNumber, 0);
+        int safePageSize = Math.min(
+            Math.max(pageSize, 1),
+            Constants.MAX_PAGE_SIZE
+        );
+
+        Page<Tournament> tournaments =
+            tournamentRepository.findByStatusOrderByCreatedAtDescIdDesc(TournamentStatus.COMPLETED, PageRequest.of(safePageNumber, safePageSize));
+
+        Page<TournamentHistoryEntryDTO> history = tournaments.map(tournamentMapper::toHistoryDTO);
+
+        return new PageDTO<>(
+            history.getContent(),
+            history.getNumber(),
+            history.getSize(),
+            history.getTotalElements(),
+            history.getTotalPages()
+        );
+    }
 }

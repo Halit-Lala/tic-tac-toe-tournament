@@ -1,5 +1,6 @@
 package com.example.tictactoe.model.entity;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +26,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -67,6 +69,14 @@ public class Tournament {
     )
     @OrderBy("gameNumber ASC")
     private List<Game> games = new ArrayList<>();
+
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = Instant.now();
+    }
 
     public Tournament(
             Player playerX,
