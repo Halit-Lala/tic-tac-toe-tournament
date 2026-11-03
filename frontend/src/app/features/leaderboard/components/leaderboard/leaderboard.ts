@@ -65,6 +65,10 @@ export class Leaderboard implements OnInit {
   }
 
   private loadLeaderboard(): void {
+    if (this.loading()) {
+      return
+    }
+
     this.loading.set(true);
     this.loadFailed.set(false);
 

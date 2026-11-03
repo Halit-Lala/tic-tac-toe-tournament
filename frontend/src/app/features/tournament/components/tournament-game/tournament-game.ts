@@ -7,10 +7,17 @@ import { CellPosition, GameBoard } from '../game-board/game-board';
 import { TournamentStore } from '../../stores/tournament.store';
 import { Scoreboard } from '../scoreboard/scoreboard';
 import { outcomeLabel, playerName } from '../../../../shared/utils/tournament-labels';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-tournament-game',
-  imports: [RouterLink, MatButtonModule, GameBoard, Scoreboard],
+  imports: [
+    DatePipe,
+    RouterLink,
+    MatButtonModule,
+    GameBoard,
+    Scoreboard
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tournament-game.html',
   styleUrl: './tournament-game.scss',

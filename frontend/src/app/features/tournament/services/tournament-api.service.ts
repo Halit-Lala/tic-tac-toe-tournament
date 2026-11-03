@@ -5,6 +5,8 @@ import { Observable } from 'rxjs';
 import { NewTournamentRequest } from '../../setup/models/setup.model';
 import { PlayMoveRequest, Tournament } from '../models/tournament.model';
 import { requestContext, RequestOptions } from '../../../core/http/request-context';
+import { PageResponse } from '../../../shared/model/page.model';
+import { TournamentHistoryEntry } from '../../history/models/tournament-history.model';
 
 @Injectable({ providedIn: 'root' })
 export class TournamentApiService {
@@ -23,6 +25,20 @@ export class TournamentApiService {
     return this.http.get<Tournament>(
       `${this.baseUrl}/${id}`,
       { context: requestContext({ loader: true, notifyErrors: true, ...options })}
+    );
+  }
+
+  getTournamentHistory(
+    pageNumber: number,
+    pageSize: number,
+    options?: RequestOptions
+  ): Observable<PageResponse<TournamentHistoryEntry>> {
+    return this.http.get<PageResponse<TournamentHistoryEntry>>(
+      `${this.baseUrl}`,
+      {
+        params: { pageNumber: pageNumber.toString(), pageSize: pageSize.toString() },
+        context: requestContext({ loader: true, notifyErrors: true, ...options })
+      }
     );
   }
 

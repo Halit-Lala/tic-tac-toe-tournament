@@ -5,7 +5,10 @@
 }
 
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
   h1 {
     margin: 0 0 4px;
@@ -17,7 +20,14 @@
     margin: 0;
     opacity: 0.7;
   }
+  
+  .created-at {
+    margin-top: 6px;
+    color: var(--mat-sys-on-surface-variant);
+    font-size: 14px;
+  }
 }
+
 
 .outcome {
   margin-bottom: 24px;

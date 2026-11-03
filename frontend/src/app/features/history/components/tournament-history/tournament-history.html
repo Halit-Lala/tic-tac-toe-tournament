@@ -1,0 +1,98 @@
+<section class="history-page">
+  <header class="page-header">
+    <div>
+      <h1 class="mb-15">Tournament history</h1>
+      <p>Browse completed tournaments and their results.</p>
+    </div>
+
+    <button
+      mat-stroked-button
+      color="primary"
+      (click)="retry()"
+      [disabled]="loading()"
+    >
+      <mat-icon>refresh</mat-icon>
+      Refresh
+    </button>
+  </header>
+
+  @if (loadFailed()) {
+    <div class="state-container error-state">
+      <mat-icon>error_outline</mat-icon>
+      <p>Unable to load tournament history.</p>
+
+      <button mat-flat-button color="primary" (click)="retry()">
+        <mat-icon>refresh</mat-icon>
+        Try again
+      </button>
+    </div>
+  } @else if (!loading() && tournaments().length === 0) {
+    <div class="state-container empty-state">
+      <mat-icon>history</mat-icon>
+      <h2>No tournaments yet</h2>
+      <p>Completed tournaments will appear here.</p>
+    </div>
+  } @else if (!loading()) {
+    <div class="history-list">
+      @for (tournament of tournaments(); track tournament.id) {
+        <article class="history-card">
+
+          <div class="tournament-info">
+            <span class="tournament-id">#{{ tournament.id }}</span>
+            <span class="tournament-date">
+              {{ tournament.createdAt | date: 'dd/MM/yyyy, HH:mm' }}
+            </span>
+          </div>
+
+          <div class="format">
+            <span>
+              {{ tournament.format.replaceAll('_', ' ') }}
+            </span>
+          </div>
+
+
+          <div class="players">
+            <div class="player">
+              <span class="symbol symbol-x">X</span>
+              <span class="player-name">{{ tournament.playerX.name }}</span>
+            </div>
+
+            <div class="player">
+              <span class="symbol symbol-o">O</span>
+              <span class="player-name">{{ tournament.playerO.name }}</span>
+            </div>
+          </div>
+
+          <div class="result">
+            <span [class.result--winner]="tournament.winner" [class.result--draw]="!tournament.winner">
+                @if (tournament.winner) {
+                    <mat-icon class="winner-icon" aria-label="Winner">emoji_events</mat-icon>
+                }
+                {{ tournament.winner ? tournament.winner.name + ' won' : 'Draw' }}
+            </span>
+          </div>
+
+          <button
+            mat-stroked-button
+            color="primary"
+            class="results-button"
+            (click)="viewResults(tournament.id)"
+          >
+            View results
+            <mat-icon>arrow_forward</mat-icon>
+          </button>
+        </article>
+      }
+    </div>
+
+    <mat-paginator
+      [length]="totalElements()"
+      [pageIndex]="pageIndex()"
+      [pageSize]="pageSize()"
+      [pageSizeOptions]="[5, 10, 20]"
+      [showFirstLastButtons]="true"
+      (page)="onPageChange($event)"
+      aria-label="Tournament history pagination"
+    />
+  }
+</section>

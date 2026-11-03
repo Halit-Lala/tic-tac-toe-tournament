@@ -30,6 +30,7 @@ export interface Tournament {
   winner: Player | null;
   score: Score;
   games: Game[];
+  createdAt: string;
 }
 
 export interface PlayMoveRequest {

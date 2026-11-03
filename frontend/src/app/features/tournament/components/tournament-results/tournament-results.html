@@ -5,8 +5,13 @@
   </section>
 } @else if (store.tournament(); as tournament) {
   <header class="page-header">
-    <h1 class="mb-15">Tournament results</h1>
-    <p>{{ tournament.playerX.name }} vs {{ tournament.playerO.name }}</p>
+    <div>
+      <h1 class="mb-15">Tournament results</h1>
+      <p>{{ tournament.playerX.name }} vs {{ tournament.playerO.name }}</p>
+    </div>
+    <p class="created-at">
+      Created {{ tournament.createdAt | date: 'dd/MM/yyyy, HH:mm' }}
+    </p>
   </header>
 
   <section class="outcome" aria-live="polite">

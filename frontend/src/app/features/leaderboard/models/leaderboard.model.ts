@@ -6,4 +6,5 @@ export interface LeaderboardEntry {
   tournamentWins: number;
   tournamentsPlayed: number;
   winRate: number;
+  createdAt: string;
 }

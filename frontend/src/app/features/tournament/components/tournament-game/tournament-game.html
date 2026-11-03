@@ -5,10 +5,17 @@
   </section>
 } @else if (store.tournament(); as tournament) {
   <header class="page-header">
-    <h1 class="mb-15">{{ tournament.playerX.name }} vs {{ tournament.playerO.name }}</h1>
-    @if (store.progress(); as progress) {
-      <p>Game {{ progress.gameNumber }} of {{ progress.totalGames }}</p>
-    }
+    <div>
+      <h1 class="mb-15">{{ tournament.playerX.name }} vs {{ tournament.playerO.name }}</h1>
+  
+      @if (store.progress(); as progress) {
+        <p>Game {{ progress.gameNumber }} of {{ progress.totalGames }}</p>
+      }
+    </div>
+
+    <p class="created-at">
+      Created {{ tournament.createdAt | date: 'dd/MM/yyyy, HH:mm' }}
+    </p>
   </header>
 
   <app-scoreboard [tournament]="tournament" />

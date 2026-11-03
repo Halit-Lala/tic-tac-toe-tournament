@@ -16,6 +16,13 @@ export const routes: Routes = [
         .then((m) => m.TOURNAMENT_ROUTES)
   },
   {
+    path: 'history',
+    title: 'History',
+    loadComponent: () => 
+      import('./features/history/components/tournament-history/tournament-history')
+        .then((m) => m.TournamentHistory)
+  },
+  {
     path: 'leaderboard',
     title: 'Leaderboard',
     loadComponent: () =>

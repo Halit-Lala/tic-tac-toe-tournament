@@ -6,10 +6,16 @@ import { distinctUntilChanged, filter, map } from 'rxjs';
 import { Scoreboard } from '../scoreboard/scoreboard';
 import { TournamentStore } from '../../stores/tournament.store';
 import { outcomeLabel, playerName } from '../../../../shared/utils/tournament-labels';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-tournament-results',
-  imports: [RouterLink, MatButtonModule, Scoreboard],
+  imports: [
+    DatePipe,
+    RouterLink,
+    MatButtonModule,
+    Scoreboard
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tournament-results.html',
   styleUrl: './tournament-results.scss',
