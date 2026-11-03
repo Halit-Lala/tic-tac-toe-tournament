@@ -1,0 +1,14 @@
+<section class="scoreboard" aria-label="Scoreboard">
+  <div class="item">
+    <span class="name">{{ tournament().playerX.name }} (X)</span>
+    <span class="value">{{ tournament().score.playerXWins }}</span>
+  </div>
+  <div class="item draws">
+    <span class="name">Draws</span>
+    <span class="value">{{ tournament().score.draws }}</span>
+  </div>
+  <div class="item">
+    <span class="name">{{ tournament().playerO.name }} (O)</span>
+    <span class="value">{{ tournament().score.playerOWins }}</span>
+  </div>
+</section>

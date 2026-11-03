@@ -1,0 +1,55 @@
+@if (store.loadFailed()) {
+  <section class="state">
+    <p>This tournament could not be loaded.</p>
+    <a mat-flat-button routerLink="/setup">Start a new tournament</a>
+  </section>
+} @else if (store.tournament(); as tournament) {
+  <header class="page-header">
+    <h1>Tournament results</h1>
+    <p>{{ tournament.playerX.name }} vs {{ tournament.playerO.name }}</p>
+  </header>
+
+  <section class="outcome" aria-live="polite">
+    @if (store.isCompleted()) {
+      @if (tournament.winner; as winner) {
+        <p class="headline">{{ winner.name }} wins the tournament</p>
+      } @else {
+        <p class="headline">The tournament is a draw</p>
+      }
+    } @else {
+      <p class="headline">This tournament is still in progress</p>
+    }
+  </section>
+
+  <app-scoreboard [tournament]="tournament" />
+
+  <section class="games">
+    <h2>Games</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Game</th>
+          <th>Started by</th>
+          <th>Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (game of tournament.games; track game.id) {
+          <tr>
+            <td>{{ game.gameNumber }}</td>
+            <td>{{ playerName(tournament, game.startingSymbol) }} ({{ game.startingSymbol }})</td>
+            <td>{{ outcomeLabel(tournament, game) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+
+  <div class="actions">
+    @if (store.isCompleted()) {
+      <button mat-flat-button type="button" (click)="playAgain()">Play again</button>
+    } @else {
+      <a mat-flat-button [routerLink]="['/tournaments', tournament.id]">Continue playing</a>
+    }
+  </div>
+}

@@ -1,0 +1,33 @@
+:host { display: block; }
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: min(100%, 360px);
+  margin: 0 auto;
+}
+
+.cell {
+  aspect-ratio: 1;
+  font-size: clamp(2rem, 10vw, 3.5rem);
+  font-weight: 600;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: #eef3fb;
+  }
+  &:disabled {
+    cursor: default;
+  }
+  &.x {
+    color: #1e3a8a;
+  }
+  &.o {
+    color: #b3261e;
+  }
+}

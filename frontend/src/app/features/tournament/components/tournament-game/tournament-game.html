@@ -1,0 +1,53 @@
+@if (store.loadFailed()) {
+  <section class="state">
+    <p>This tournament could not be loaded.</p>
+    <a mat-flat-button routerLink="/setup">Start a new tournament</a>
+  </section>
+} @else if (store.tournament(); as tournament) {
+  <header class="page-header">
+    <h1>{{ tournament.playerX.name }} vs {{ tournament.playerO.name }}</h1>
+    @if (store.progress(); as progress) {
+      <p>Game {{ progress.gameNumber }} of {{ progress.totalGames }}</p>
+    }
+  </header>
+
+  <app-scoreboard [tournament]="tournament" />
+
+  <section class="status" aria-live="polite">
+    @if (turn(); as turn) {
+      <p>
+        Turn: <strong>{{ turn.name }}</strong> ({{ turn.symbol }})
+      </p>
+    } @else if (store.awaitingNextGame()) {
+      <p>
+        Game finished: <strong>{{ lastGameResult() }}</strong>
+      </p>
+    } @else if (store.isCompleted()) {
+      <p>
+        Tournament finished:
+        <strong>{{ tournament.winner ? tournament.winner.name + ' wins' : 'draw' }}</strong>
+      </p>
+    }
+  </section>
+
+  @if (displayedGame(); as game) {
+    <app-game-board
+      [board]="game.board"
+      [disabled]="!store.currentGame() || store.busy()"
+      (cellClick)="onCellClick($event)"
+    />
+  }
+
+  <div class="actions">
+    @if (store.awaitingNextGame()) {
+      <button mat-flat-button type="button" [disabled]="store.busy()" (click)="onNextGame()">
+        Next game
+      </button>
+    }
+    @if (store.isCompleted()) {
+      <a mat-flat-button [routerLink]="['/tournaments', tournament.id, 'results']">
+        View results
+      </a>
+    }
+  </div>
+}

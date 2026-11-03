@@ -1,0 +1,17 @@
+<div class="board" role="grid" aria-label="Tic Tac Toe board">
+    @for (cells of board(); track $index; let row = $index) {
+        @for (cell of cells; track $index; let col = $index) {
+            <button
+                type="button"
+                class="cell"
+                [class.x]="cell === 'X'"
+                [class.o]="cell === 'O'"
+                [disabled]="disabled() || cell !== null"
+                [attr.aria-label]="'Row ' + (row + 1) + ', column ' + (col + 1) + ': ' + (cell ?? 'empty')"
+                (click)="cellClick.emit({ row, col })"
+            >
+                {{ cell }}
+            </button>
+        }
+    }
+</div>

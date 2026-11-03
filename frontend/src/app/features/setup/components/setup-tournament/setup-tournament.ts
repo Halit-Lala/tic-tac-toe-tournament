@@ -4,7 +4,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { EMPTY, Observable, Subject, catchError, exhaustMap, finalize, map } from 'rxjs';
 import { AutocompleteInput } from '../../../../shared/components/autocomplete-input/autocomplete-input';
 import { distinctNamesValidator, notBlankValidator } from '../../validators/name-validators';
@@ -26,6 +26,7 @@ export class SetupTournament {
   private readonly fb = inject(FormBuilder);
   private readonly tournamentApi = inject(TournamentApiService);
   private readonly playerApi = inject(PlayerApiService);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly notifications = inject(NotificationService);
 
@@ -52,6 +53,15 @@ export class SetupTournament {
   private readonly submit$ = new Subject<NewTournamentRequest>();
 
   constructor() {
+    const params = this.route.snapshot.queryParamMap;
+    const format = params.get('format');
+
+    this.form.patchValue({
+      playerXName: params.get('playerX') ?? '',
+      playerOName: params.get('playerO') ?? '',
+      ...(this.formats.some((f) => f.value === format) && { format: format as TournamentFormat }),
+    });
+
     this.submit$.pipe(
         exhaustMap((request) =>
           this.tournamentApi.createTournament(request).pipe(
