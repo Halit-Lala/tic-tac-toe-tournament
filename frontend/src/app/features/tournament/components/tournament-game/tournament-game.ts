@@ -56,4 +56,14 @@ export class TournamentGame {
   protected onNextGame(): void {
     this.store.startNextGame();
   }
+
+  protected canLeaveTournament(): boolean {
+    if (this.store.isCompleted()) {
+      return true;
+    }
+
+    return window.confirm(
+      'The tournament is not finished! Do you confirm to exit?',
+    );
+  }
 }
