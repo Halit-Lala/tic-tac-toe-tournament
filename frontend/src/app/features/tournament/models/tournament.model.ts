@@ -31,3 +31,15 @@ export interface Tournament {
   score: Score;
   games: Game[];
 }
+
+export interface PlayMoveRequest {
+  row: number;
+  col: number;
+  symbol: PlayerSymbol;
+}
+
+export const TOTAL_GAMES: Record<TournamentFormat, number> = {
+  BEST_OF_1: 1,
+  BEST_OF_3: 3,
+  BEST_OF_5: 5,
+};
