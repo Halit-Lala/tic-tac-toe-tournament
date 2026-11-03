@@ -5,7 +5,7 @@
   </section>
 } @else if (store.tournament(); as tournament) {
   <header class="page-header">
-    <h1>{{ tournament.playerX.name }} vs {{ tournament.playerO.name }}</h1>
+    <h1 class="mb-15">{{ tournament.playerX.name }} vs {{ tournament.playerO.name }}</h1>
     @if (store.progress(); as progress) {
       <p>Game {{ progress.gameNumber }} of {{ progress.totalGames }}</p>
     }

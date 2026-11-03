@@ -1,5 +1,4 @@
-// setup-tournament.ts
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -29,6 +28,7 @@ export class SetupTournament {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly notifications = inject(NotificationService);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly maxNameLength = 50;
   protected readonly formats: Array<{ value: TournamentFormat; label: string }> = [
@@ -50,40 +50,48 @@ export class SetupTournament {
 
   protected readonly searchPlayers = (term: string): Observable<Player[]> => this.playerApi.search(term);
 
-  private readonly submit$ = new Subject<NewTournamentRequest>();
-
   constructor() {
     const params = this.route.snapshot.queryParamMap;
-    const format = params.get('format');
 
-    this.form.patchValue({
-      playerXName: params.get('playerX') ?? '',
-      playerOName: params.get('playerO') ?? '',
-      ...(this.formats.some((f) => f.value === format) && { format: format as TournamentFormat }),
-    });
+    if (params.keys.length) {
+      const playerX = params.get('playerX');
+      const playerO = params.get('playerO');
+      const format = params.get('format');
 
-    this.submit$.pipe(
-        exhaustMap((request) =>
-          this.tournamentApi.createTournament(request).pipe(
-            finalize(() => this.submitting.set(false)),
-            catchError(() => EMPTY),
-          ),
-        ),
-        takeUntilDestroyed(),
-      )
-      .subscribe((tournament: Tournament) => {
-        this.notifications.success('Tournament created');
-        this.router.navigate(['/tournaments', tournament.id])
+      this.form.patchValue({
+        playerXName: playerX ?? '',
+        playerOName: playerO ?? '',
+        ...(this.formats.some((f) => f.value === format) && {
+          format: format as TournamentFormat,
+        }),
       });
+    }
   }
 
-  protected onSubmit(): void {
+  protected submitTournament(): void {
     if (this.form.invalid || this.submitting()) {
       return;
     }
+
+    const { playerXName, playerOName, format } = this.form.getRawValue();
+
+    const request: NewTournamentRequest = {
+      playerXName: playerXName.trim(),
+      playerOName: playerOName.trim(),
+      format,
+    }
     this.submitting.set(true);
 
-    const newTournament: NewTournamentRequest = this.form.getRawValue();
-    this.submit$.next({ playerXName: newTournament.playerXName.trim(), playerOName: newTournament.playerOName.trim(), format: newTournament.format });
+    this.tournamentApi.createTournament(request)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.submitting.set(false)),
+      )
+      .subscribe({
+        next: (tournament: Tournament) => {
+          this.notifications.success('Tournament created');
+          this.router.navigate(['/tournaments', tournament.id]);
+        }
+      });
   }
 }
