@@ -1,0 +1,101 @@
+<section class="page">
+  <header class="page-header">
+    <h1 class="mb-15">Leaderboard</h1>
+    <p>Players ranked by their tournament performance</p>
+  </header>
+
+  <section class="leaderboard-card">
+    @if (loadFailed()) {
+      <div class="state">
+        <p>Unable to load the leaderboard.</p>
+
+        <button mat-flat-button type="button" (click)="retry()">
+          Try again
+        </button>
+      </div>
+    } @else if (!loading() && entries().length === 0) {
+      <div class="state">
+        <p>No leaderboard entries available yet.</p>
+      </div>
+    } @else if (entries().length > 0) {
+      <div class="table-container">
+        <table mat-table [dataSource]="entries()">
+
+          <ng-container matColumnDef="rank">
+            <th mat-header-cell *matHeaderCellDef>Rank</th>
+
+            <td mat-cell *matCellDef="let entry">
+              <div class="rank-cell">
+                @if (entry.rank <= 3) {
+                  <mat-icon
+                    class="rank-star"
+                    [class.gold]="entry.rank === 1"
+                    [class.silver]="entry.rank === 2"
+                    [class.bronze]="entry.rank === 3"
+                    aria-hidden="true"
+                  >
+                    star
+                  </mat-icon>
+                }
+
+                <span>{{ entry.rank }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="player">
+            <th mat-header-cell *matHeaderCellDef>Player</th>
+
+            <td mat-cell *matCellDef="let entry">
+              {{ entry.player.name }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="tournamentWins">
+            <th mat-header-cell *matHeaderCellDef>
+              Tournament Wins
+            </th>
+
+            <td mat-cell *matCellDef="let entry">
+              {{ entry.tournamentWins }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="tournamentsPlayed">
+            <th mat-header-cell *matHeaderCellDef>
+              Tournaments Played
+            </th>
+
+            <td mat-cell *matCellDef="let entry">
+              {{ entry.tournamentsPlayed }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="winRate">
+            <th mat-header-cell *matHeaderCellDef>Win Rate</th>
+
+            <td mat-cell *matCellDef="let entry">
+              {{ entry.winRate | number:'1.1-1' }}%
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        </table>
+      </div>
+    }
+
+    @if (totalElements() > 0) {
+      <mat-paginator
+        [length]="totalElements()"
+        [pageIndex]="pageIndex()"
+        [pageSize]="pageSize()"
+        [pageSizeOptions]="[5, 10, 20, 50]"
+        [showFirstLastButtons]="true"
+        (page)="onPageChange($event)"
+      />
+    }
+  </section>
+</section>
