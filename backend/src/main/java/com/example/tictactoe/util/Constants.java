@@ -18,4 +18,6 @@ public class Constants {
         {0,4,8},{2,4,6}            // diagonals
     };
 
+    public static final int MAX_PAGE_SIZE = 50;
+
 }
