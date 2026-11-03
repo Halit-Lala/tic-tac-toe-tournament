@@ -76,7 +76,6 @@ export class TournamentStore {
                 return this.tournamentApi.playMove(tournament.id, game.gameNumber, { row, col, symbol: game.nextSymbol }).pipe(
                         tap((updated) => this._tournament.set(updated)),
                         catchError(() => {
-                            this.load$.next(tournament.id);
                             return EMPTY;
                         }),
                         finalize(() => this._busy.set(false)),
