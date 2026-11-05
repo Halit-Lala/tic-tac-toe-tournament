@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 import com.example.tictactoe.model.enums.TournamentFormat;
+import com.example.tictactoe.model.enums.TournamentMode;
 import com.example.tictactoe.model.enums.TournamentStatus;
 
 public record TournamentDTO(
@@ -15,5 +16,8 @@ public record TournamentDTO(
     PlayerDTO winner,
     ScoreDTO score,
     List<GameDTO> games,
+    TournamentMode mode,
+    boolean awaitingOpponent,
+    long revision,
     Instant createdAt
 ) {}

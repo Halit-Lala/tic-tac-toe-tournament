@@ -23,6 +23,11 @@ public class TournamentMapper {
     }
 
     public TournamentDTO toDTO(Tournament tournament) {
+        long revision = tournament.getGames()
+                    .stream()
+                    .mapToLong(game -> 1 + game.getBoardState().chars().filter(c -> c != '-').count())
+                    .sum();
+
         return new TournamentDTO(
             tournament.getId(),
             playerMapper.toDTO(tournament.getPlayerX()),
@@ -32,6 +37,9 @@ public class TournamentMapper {
             playerMapper.toDTO(tournament.getWinner()),
             calculateScore(tournament),
             gameMapper.toDTOList(tournament.getGames()),
+            tournament.getMode(),
+            tournament.isAwaitingOpponent(),
+            revision,
             tournament.getCreatedAt()
         );
     }

@@ -9,5 +9,5 @@ import jakarta.validation.constraints.NotNull;
 public record PlayMoveDTO(
     @NotNull @Min(0) @Max(2) Integer row,
     @NotNull @Min(0) @Max(2) Integer col,
-    @NotNull PlayerSymbol symbol
+    PlayerSymbol symbol
 ) {}

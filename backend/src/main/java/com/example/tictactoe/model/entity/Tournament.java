@@ -1,16 +1,20 @@
 package com.example.tictactoe.model.entity;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.tictactoe.exception.ForbiddenException;
 import com.example.tictactoe.exception.IllegalMoveException;
 import com.example.tictactoe.model.enums.GameOutcome;
 import com.example.tictactoe.model.enums.GameStatus;
 import com.example.tictactoe.model.enums.PlayerSymbol;
 import com.example.tictactoe.model.enums.TournamentFormat;
+import com.example.tictactoe.model.enums.TournamentMode;
 import com.example.tictactoe.model.enums.TournamentStatus;
 
 import jakarta.persistence.CascadeType;
@@ -28,6 +32,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,6 +42,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Tournament {
+
+    @Version
+    private long version;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,6 +70,26 @@ public class Tournament {
     @JoinColumn(name = "winner_id")
     private Player winner;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private TournamentMode mode = TournamentMode.LOCAL;
+
+    @Getter(AccessLevel.NONE)
+    @Column(name = "player_x_token", length = 64)
+    private String playerXToken;
+    
+    @Getter(AccessLevel.NONE)
+    @Column(name = "player_o_token", length = 64)
+    private String playerOToken;
+    
+    @Getter(AccessLevel.NONE)
+    @Column(name = "invite_token", length = 64)
+    private String inviteToken;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "invite_seat", length = 1)
+    private PlayerSymbol inviteSeat;
+
     @OneToMany(
         mappedBy = "tournament",
         cascade = CascadeType.ALL,
@@ -76,6 +104,42 @@ public class Tournament {
     @PrePersist
     protected void onCreate() {
         createdAt = Instant.now();
+    }
+
+    public void makeOnline(PlayerSymbol creatorSeat, String xToken, String oToken, String invite) {
+        this.mode = TournamentMode.ONLINE;
+        this.playerXToken = xToken;
+        this.playerOToken = oToken;
+        this.inviteToken = invite;
+        this.inviteSeat = creatorSeat.opposite();
+    }
+
+    public boolean isAwaitingOpponent() {
+        return mode == TournamentMode.ONLINE && inviteToken != null;
+    }
+
+    public Optional<PlayerSymbol> seatFor(String token) {
+        if (mode != TournamentMode.ONLINE || token == null || token.isBlank()) return Optional.empty();
+        if (sameToken(playerXToken, token)) return Optional.of(PlayerSymbol.X);
+        if (sameToken(playerOToken, token)) return Optional.of(PlayerSymbol.O);
+        return Optional.empty();
+    }
+
+    public PlayerSymbol claimInvite(String token) {
+        if (!isAwaitingOpponent() || !sameToken(inviteToken, token)) {
+            throw new ForbiddenException("This invite is invalid or was already used");
+        }
+        this.inviteToken = null;
+        return inviteSeat;
+    }
+
+    public String tokenOf(PlayerSymbol seat) {
+        return seat == PlayerSymbol.X ? playerXToken : playerOToken;
+    }
+
+    private static boolean sameToken(String expected, String given) {
+        return expected != null && given != null && MessageDigest.isEqual(
+            expected.getBytes(StandardCharsets.UTF_8), given.getBytes(StandardCharsets.UTF_8));
     }
 
     public Tournament(

@@ -23,32 +23,32 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // 404: the resource in the URL doesn't exist
+    @ExceptionHandler(ForbiddenException.class)
+    public ProblemDetail handleForbidden(ForbiddenException ex) {
+        return problem(HttpStatus.FORBIDDEN, "Forbidden", ex.getMessage());
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ProblemDetail handleNotFound(ResourceNotFoundException ex) {
         return problem(HttpStatus.NOT_FOUND, "Not found", ex.getMessage());
     }
 
-    // 409: valid request, but the game/tournament state doesn't allow it
     @ExceptionHandler(IllegalMoveException.class)
     public ProblemDetail handleIllegalMove(IllegalMoveException ex) {
         return problem(HttpStatus.CONFLICT, "Illegal move", ex.getMessage());
     }
 
-    // 409: two requests changed the same game at the same time (@Version)
     @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
     public ProblemDetail handleConcurrentUpdate(ObjectOptimisticLockingFailureException ex) {
         return problem(HttpStatus.CONFLICT, "Concurrent update",
                 "The game was just updated, please reload and try again");
     }
 
-    // 400: bad data that got past Bean Validation
     @ExceptionHandler(IllegalArgumentException.class)
     public ProblemDetail handleBadRequest(IllegalArgumentException ex) {
         return problem(HttpStatus.BAD_REQUEST, "Invalid request", ex.getMessage());
     }
-
-    // 500: everything else (bugs). Log it, hide the details from the client.
+    
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleUnexpected(Exception ex) {
         log.error("Unexpected error", ex);
