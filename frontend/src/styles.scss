@@ -45,7 +45,7 @@ body {
 }
 
 .snackbar-info {
-  --mat-snack-bar-container-color: #1e3a8a;
+  --mat-snack-bar-container-color: #0060b5;
 }
 
 .snackbar-success {
@@ -54,6 +54,10 @@ body {
 
 .snackbar-error {
   --mat-snack-bar-container-color: #b3261e;
+}
+
+.custom-snackbar {
+  margin-top: 80px !important;
 }
 
 .mb-15 {

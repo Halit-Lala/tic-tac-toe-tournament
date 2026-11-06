@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { TournamentGame } from './components/tournament-game/tournament-game';
 import { TournamentResults } from './components/tournament-results/tournament-results';
 import { tournamentExitGuard } from './guards/tournament-exit.guard';
+import { tournamentAccessGuard } from './guards/tournament-access.guard';
 
 export const TOURNAMENT_ROUTES: Routes = [
   { path: '', pathMatch: 'full', redirectTo: '/setup' },
@@ -13,6 +14,7 @@ export const TOURNAMENT_ROUTES: Routes = [
   {
     path: ':id',
     title: 'Tournament',
+    canActivate: [tournamentAccessGuard],
     canDeactivate: [tournamentExitGuard],
     component: TournamentGame,
   }

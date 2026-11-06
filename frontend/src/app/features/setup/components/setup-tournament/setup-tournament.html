@@ -30,6 +30,26 @@
       <p class="hint">Player X starts the first game. The starting player alternates every game.</p>
     </div>
 
+    <div style="display: flex; flex-direction: row; gap: 20px;">
+      <div class="field" style="flex: 0 1 calc(50% - 10px);">
+        <span class="label mb-15" id="mode-label">How do you want to play?</span>
+        <mat-button-toggle-group formControlName="mode" (change)="onModeChange($event.value)" aria-labelledby="mode-label">
+          <mat-button-toggle value="LOCAL">Same screen</mat-button-toggle>
+          <mat-button-toggle value="ONLINE">Online (two browsers)</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+  
+      @if (isOnline === true) {
+        <div class="field" style="flex: 0 1 calc(50% - 1px);">
+          <span class="label mb-15" id="seat-label">I play as</span>
+          <mat-button-toggle-group formControlName="creatorSeat" aria-labelledby="seat-label">
+            <mat-button-toggle value="X">X</mat-button-toggle>
+            <mat-button-toggle value="O">O</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+      }
+    </div>
+
     <div class="field">
       <span class="label mb-15" id="format-label">Tournament length</span>
       <mat-button-toggle-group formControlName="format" aria-labelledby="format-label">

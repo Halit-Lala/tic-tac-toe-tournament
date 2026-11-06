@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,10 +9,11 @@ import { AutocompleteInput } from '../../../../shared/components/autocomplete-in
 import { distinctNamesValidator, notBlankValidator } from '../../validators/name-validators';
 import { TournamentApiService } from '../../../tournament/services/tournament-api.service';
 import { PlayerApiService } from '../../../player/services/player-api.service';
-import { Tournament, TournamentFormat } from '../../../tournament/models/tournament.model';
+import { CreatedTournament, Tournament, TournamentFormat, TournamentMode } from '../../../tournament/models/tournament.model';
 import { NewTournamentRequest } from '../../models/setup.model';
-import { Player } from '../../../player/model/player.model';
+import { Player, PlayerSymbol } from '../../../player/model/player.model';
 import { NotificationService } from '../../../../core/service/notification.service';
+import { SeatStorage } from '../../../tournament/services/seat-storage.service';
 
 @Component({
   selector: 'app-setup-tournament',
@@ -29,6 +30,7 @@ export class SetupTournament {
   private readonly router = inject(Router);
   private readonly notifications = inject(NotificationService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly seatStorage = inject(SeatStorage);
 
   protected readonly maxNameLength = 50;
   protected readonly formats: Array<{ value: TournamentFormat; label: string }> = [
@@ -36,6 +38,7 @@ export class SetupTournament {
     { value: 'BEST_OF_3', label: 'Best of 3' },
     { value: 'BEST_OF_5', label: 'Best of 5' },
   ];
+  protected isOnline: boolean = false;
 
   protected readonly submitting = signal(false);
 
@@ -44,10 +47,12 @@ export class SetupTournament {
       playerXName: ['', [Validators.required, notBlankValidator, Validators.maxLength(this.maxNameLength)]],
       playerOName: ['', [Validators.required, notBlankValidator, Validators.maxLength(this.maxNameLength)]],
       format: ['BEST_OF_3' as TournamentFormat, Validators.required],
+      mode: ['LOCAL' as TournamentMode, Validators.required],
+      creatorSeat: ['X' as PlayerSymbol]
     },
     { validators: distinctNamesValidator }
   );
-
+  
   protected readonly searchPlayers = (term: string): Observable<Player[]> => this.playerApi.search(term);
 
   constructor() {
@@ -73,12 +78,14 @@ export class SetupTournament {
       return;
     }
 
-    const { playerXName, playerOName, format } = this.form.getRawValue();
+    const { playerXName, playerOName, format, mode, creatorSeat } = this.form.getRawValue();
 
     const request: NewTournamentRequest = {
       playerXName: playerXName.trim(),
       playerOName: playerOName.trim(),
       format,
+      mode,
+      creatorSeat: mode === 'ONLINE' ? creatorSeat : undefined,
     }
     this.submitting.set(true);
 
@@ -87,11 +94,19 @@ export class SetupTournament {
         takeUntilDestroyed(this.destroyRef),
         finalize(() => this.submitting.set(false)),
       )
-      .subscribe({
-        next: (tournament: Tournament) => {
-          this.notifications.success('Tournament created');
-          this.router.navigate(['/tournaments', tournament.id]);
+      .subscribe((response: CreatedTournament) => {
+        if (response.seat && response.seatToken) {
+          this.seatStorage.storeSeatAccess(
+            response.tournament.id,
+            { seat: response.seat, seatToken: response.seatToken, inviteToken: response.inviteToken ?? undefined}
+          );
         }
+        this.notifications.success('Tournament created');          
+        this.router.navigate(['/tournaments', response.tournament.id]);
       });
+  }
+
+  onModeChange(mode: TournamentMode): void {
+    this.isOnline = mode === 'ONLINE';
   }
 }

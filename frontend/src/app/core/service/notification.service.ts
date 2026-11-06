@@ -22,7 +22,7 @@ export class NotificationService {
   private show(message: string, type: NotificationType, duration = 4000): void {
     const config: MatSnackBarConfig = {
       duration,
-      panelClass: ['snackbar', `snackbar-${type}`],
+      panelClass: ['snackbar', `snackbar-${type}`, 'custom-snackbar'],
       horizontalPosition: 'end',
       verticalPosition: 'top',
     };

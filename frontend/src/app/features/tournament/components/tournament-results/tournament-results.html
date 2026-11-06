@@ -50,11 +50,13 @@
     </table>
   </section>
 
-  <div class="actions">
-    @if (store.isCompleted()) {
-      <button mat-flat-button type="button" (click)="playAgain()">Play again</button>
-    } @else {
-      <a mat-flat-button [routerLink]="['/tournaments', tournament.id]">Continue playing</a>
-    }
-  </div>
+  @if (store.isParticipant()) {
+    <div class="actions">
+      @if (store.isCompleted()) {
+        <button mat-flat-button type="button" (click)="playAgain()">Play again</button>
+      } @else {
+        <a mat-flat-button [routerLink]="['/tournaments', tournament.id]">Continue playing</a>
+      }
+    </div>
+  }
 }

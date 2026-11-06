@@ -8,6 +8,8 @@ import { TournamentStore } from '../../stores/tournament.store';
 import { Scoreboard } from '../scoreboard/scoreboard';
 import { outcomeLabel, playerName } from '../../../../shared/utils/tournament-labels';
 import { DatePipe } from '@angular/common';
+import { NotificationService } from '../../../../core/service/notification.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-tournament-game',
@@ -15,6 +17,7 @@ import { DatePipe } from '@angular/common';
     DatePipe,
     RouterLink,
     MatButtonModule,
+    MatIconModule,
     GameBoard,
     Scoreboard
   ],
@@ -24,7 +27,20 @@ import { DatePipe } from '@angular/common';
 })
 export class TournamentGame {
   protected readonly store = inject(TournamentStore);
+  private readonly notifications = inject(NotificationService);
   private readonly route = inject(ActivatedRoute);
+
+  protected readonly inviteLink = computed(() => {
+    const tournament = this.store.tournament();
+    const inviteToken = this.store.inviteToken();
+    return tournament?.awaitingOpponent && inviteToken
+      ? `${location.origin}/tournaments/${tournament.id}#invite=${inviteToken}`
+      : null;
+  });
+
+  protected copyInvite(link: string): void {
+    navigator.clipboard.writeText(link).then(() => this.notifications.info('Invite link copied'));
+  }
 
   protected readonly displayedGame = computed(
     () => this.store.currentGame() ?? this.store.lastGame(),

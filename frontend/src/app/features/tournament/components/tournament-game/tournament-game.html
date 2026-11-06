@@ -5,11 +5,29 @@
   </section>
 } @else if (store.tournament(); as tournament) {
   <header class="page-header">
-    <div>
-      <h1 class="mb-15">{{ tournament.playerX.name }} vs {{ tournament.playerO.name }}</h1>
-  
+    <div class="header-main">
+      <h1>
+        <span [class.my-player]="store.mySeat() === 'X'">
+          {{ tournament.playerX.name }}
+          @if (store.mySeat() === 'X') {
+            <span class="seat-badge">You</span>
+          }
+        </span>
+
+        <span class="versus">vs</span>
+
+        <span [class.my-player]="store.mySeat() === 'O'">
+          {{ tournament.playerO.name }}
+          @if (store.mySeat() === 'O') {
+            <span class="seat-badge">You</span>
+          }
+        </span>
+      </h1>
+
       @if (store.progress(); as progress) {
-        <p>Game {{ progress.gameNumber }} of {{ progress.totalGames }}</p>
+        <p class="game-progress">
+          Game {{ progress.gameNumber }} of {{ progress.totalGames }}
+        </p>
       }
     </div>
 
@@ -17,6 +35,23 @@
       Created {{ tournament.createdAt | date: 'dd/MM/yyyy, HH:mm' }}
     </p>
   </header>
+
+  @if (inviteLink(); as link) {
+    <section class="invite">
+      <div class="invite-info mb-15">
+        <strong>Waiting for the other player</strong>
+        <p>Share this invitation link to start playing.</p>
+      </div>
+
+      <div class="invite-actions">
+        <div class="invite-link">{{link}}</div>
+        <button mat-stroked-button type="button" (click)="copyInvite(link)">
+          <mat-icon>content_copy</mat-icon>
+          Copy
+        </button>
+      </div>
+    </section>
+  }
 
   <app-scoreboard [tournament]="tournament" />
 
@@ -40,7 +75,7 @@
   @if (displayedGame(); as game) {
     <app-game-board
       [board]="game.board"
-      [disabled]="!store.currentGame() || store.busy()"
+      [disabled]="!store.canPlay() || !store.currentGame() || store.busy()"
       (cellClick)="onCellClick($event)"
     />
   }
